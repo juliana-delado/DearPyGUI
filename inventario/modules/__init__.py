@@ -1,0 +1,1 @@
+# Inicializador del paquete modules para el sistema de inventario
