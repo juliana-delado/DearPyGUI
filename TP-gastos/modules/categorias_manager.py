@@ -23,28 +23,33 @@ class CategoriasManager(DatabaseManager):
     # ================================
     
     def agregar_categoria(self, nombre: str, descripcion: str = "") -> bool:
-        """
-        Agregar una nueva categoría
-        
-        Args:
-            nombre (str): Nombre de la categoría
-            descripcion (str): Descripción opcional
-            
-        Returns:
-            bool: True si se agregó correctamente
-            
-        TODO: Implementa este método siguiendo estos pasos:
-        1. Validar que el nombre no esté vacío (usar nombre.strip())
-        2. Si está vacío, hacer logger.warning() y retornar False
-        3. Ejecutar INSERT usando: self.execute_command(sql.INSERT_CATEGORIA, (nombre, descripcion))
-        4. Si rows_affected > 0, hacer logger.info() y retornar True
-        5. Si no, hacer logger.error() y retornar False
-        6. Capturar excepciones con try-except, logger.error() y retornar False
-        """
-        # TODO: IMPLEMENTAR AQUÍ
-        logger.info("✅ Agregar categoría - Funcionalidad pendiente")
-        return False
+        """ Agregar una nueva categoría """
     
+       
+        # TODO:  def agregar_categoria(self, nombre: str, descripcion: str) -> bool:
+        def agregar_categoria(self, nombre: str, descripcion: str = "") -> bool:
+            """Agregar una nueva categoría"""
+        try:
+            nombre = nombre.strip()
+            if not nombre:
+                logger.warning("⚠️ El nombre de la categoría no puede estar vacío")
+                return False
+
+            # Validar que no exista otra categoría con el mismo nombre
+            if not self.validar_categoria_unica(nombre):
+                logger.warning(f"⚠️ La categoría '{nombre}' ya existe")
+                return False
+
+            rows_affected = self.execute_command(sql.INSERT_CATEGORIA, (nombre, descripcion.strip()))
+            if rows_affected > 0:
+                logger.info(f"✅ Categoría '{nombre}' agregada correctamente")
+                return True
+            else:
+                logger.error(f"❌ No se pudo agregar la categoría '{nombre}'")
+                return False
+        except Exception as e:
+            logger.error(f"❌ Error agregando categoría: {e}")
+            return False
     def actualizar_categoria(self, categoria_id: int, nombre: str, descripcion: str = "") -> bool:
         """
         Actualizar una categoría existente
@@ -82,13 +87,14 @@ class CategoriasManager(DatabaseManager):
         Returns:
             list: Lista de tuplas con las categorías (id, nombre, descripcion)
             
-        TODO: Implementa este método:
-        1. Ejecutar consulta: self.execute_query(sql.SELECT_CATEGORIAS_ACTIVAS)
-        2. Retornar directamente el resultado (es una lista de tuplas)
         """
-        # TODO: IMPLEMENTAR AQUÍ
-        logger.info("✅ Obtener categorías - Funcionalidad pendiente")
-        return []
+        # TODO: def obtener_categorias(self) -> list:
+        """Obtener todas las categorías activas"""
+        try:
+            return self.execute_query(sql.SELECT_CATEGORIAS_ACTIVAS)
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo categorías: {e}")
+            return []
     
     def obtener_categoria_por_id(self, categoria_id: int):
         """

@@ -11,9 +11,14 @@ import logging
 from datetime import datetime, date
 import logging
 
-# Agregar el directorio padre al path para importar lib
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from lib.myfunctions.myscreen import getPositionX
+# Intentar importar helper opcional `getPositionX` desde carpeta `lib` (si existe)
+try:
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from lib.myfunctions.myscreen import getPositionX
+except Exception:
+    # Si no existe, usamos un fallback que devuelve 0
+    def getPositionX():
+        return 0
 
 logger = logging.getLogger(__name__)
 

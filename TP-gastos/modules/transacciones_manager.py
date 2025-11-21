@@ -160,7 +160,20 @@ class TransaccionesManager(DatabaseManager):
         """
         params = (tipo, tipo, categoria, categoria, fecha_desde, fecha_desde, fecha_hasta, fecha_hasta)
         return self.execute_query(sql.SELECT_TRANSACCIONES_BY_FILTRO, params)
-    
+    def soft_delete(self, trans_id: int) -> bool:
+        try:
+            sql = "UPDATE transacciones SET eliminado = 1 WHERE id = ?"
+            rows = self.execute_command(sql, (trans_id,))
+            if rows and rows > 0:
+                logger.info(f"Transacción id={trans_id} marcada como eliminada.")
+                return True
+            else:
+                logger.error(f"No se pudo eliminar la transacción id={trans_id}.")
+                return False
+        except Exception as e:
+            logger.error(f"Error al eliminar (soft) transacción id={trans_id}: {e}", exc_info=True)
+            return False
+
     # ================================
     # REPORTES Y ESTADÍSTICAS
     # ================================
@@ -200,7 +213,24 @@ class TransaccionesManager(DatabaseManager):
             float: Balance actual
         """
         result = self.execute_query(sql.SELECT_BALANCE_ACTUAL)
-        return result[0][0] if result else 0.0
+        return result[0][0] if result else 0.0 
+    def obtener_resumen_balance(self):
+        """
+        Retorna dict: {'total_ingresos': X, 'total_egresos': Y, 'balance': X - Y}
+        """
+        try:
+            sql_ing = "SELECT IFNULL(SUM(monto), 0) FROM transacciones WHERE tipo = 'ingreso' AND eliminado = 0"
+            sql_eg = "SELECT IFNULL(SUM(monto), 0) FROM transacciones WHERE tipo = 'egreso' AND eliminado = 0"
+            ingresos = self.execute_query(sql_ing, ())
+            egresos = self.execute_query(sql_eg, ())
+            total_ing = float(ingresos[0][0]) if ingresos and ingresos[0][0] is not None else 0.0
+            total_eg = float(egresos[0][0]) if egresos and egresos[0][0] is not None else 0.0
+            balance = total_ing - total_eg
+            return {"total_ingresos": total_ing, "total_egresos": total_eg, "balance": balance}
+        except Exception as e:
+            logger.error(f"Error al calcular resumen balance: {e}", exc_info=True)
+            return {"total_ingresos": 0.0, "total_egresos": 0.0, "balance": 0.0}
+
     
     def obtener_datos_para_grafico_categorias(self, tipo: Optional[str] = None) -> List[tuple]:
         """
